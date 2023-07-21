@@ -6,10 +6,12 @@ public class cod1 {
         String line;
         line = s.nextLine();
         String[] split=new String[]{"a","b","c"};
+        String[] split1=new String[]{"a","b","c"};
         if (line.isEmpty()) {
             System.out.println("Исходная строка пуста");
         } else {
             System.out.println(split);
+            System.out.println(split1);
         }
         System.out.println("Конфликтующее изменение");
     }
