@@ -1,4 +1,5 @@
 import java.util.Scanner;
+
 public class decomposition7793 {
     public static void main(String[] args) {
         Scanner s = new Scanner(System.in);
@@ -6,25 +7,27 @@ public class decomposition7793 {
         String green = s.nextLine();
         String[] redArr = red.split(" ");
         String[] greenArr = green.split(" ");
-        onlyRed(redArr, greenArr);
+        System.out.println("Только в красном");
+        onlyOne(greenArr,redArr);
         redAndGreen(redArr, greenArr);
-        onlyGreen(redArr, greenArr);
+        System.out.println("Только в зеленом");
+        onlyOne(redArr, greenArr);
         System.out.println();
     }
 
 
-    public static void onlyRed(String[] redArr, String[] greenArr) {
-        System.out.println("Только в красном");
-        for (int ri = 0; ri < redArr.length; ri++) {
+    public static void onlyOne(String[] redArr, String[] greenArr) {
+
+        for (int gi = 0;gi < greenArr.length; gi++) {
             boolean found = false;
-            for (int gi = 0; gi < greenArr.length; gi++) {
+            for (int ri = 0; ri < redArr.length; ri++) {
                 if (redArr[ri].equals(greenArr[gi])) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                System.out.println(redArr[ri]);
+                System.out.println(greenArr[gi]);
             }
         }
     }
@@ -41,21 +44,5 @@ public class decomposition7793 {
         }
     }
 
-    public static void onlyGreen(String[] redArr, String[] greenArr) {
-        System.out.println("Только в зеленом");
-        for (
-                int gi = 0;
-                gi < greenArr.length; gi++) {
-            boolean found = false;
-            for (int ri = 0; ri < redArr.length; ri++) {
-                if (redArr[ri].equals(greenArr[gi])) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                System.out.println(greenArr[gi]);
-            }
-        }
-    }
+
 }
