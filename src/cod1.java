@@ -14,5 +14,6 @@ public class cod1 {
             System.out.println(split1);
         }
         System.out.println("Конфликтующее изменение");
+        System.out.println("Очень конфликтующее изменение");
     }
 }
