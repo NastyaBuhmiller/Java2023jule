@@ -1,3 +1,5 @@
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
+
 import java.util.Scanner;
 
 public class cod1 {
@@ -13,6 +15,6 @@ public class cod1 {
             System.out.println(split);
             System.out.println(split1);
         }
-        System.out.println("Конфликтующее изменение");
+        System.out.println("Моделирование конфликта, попытка 2");
     }
 }
