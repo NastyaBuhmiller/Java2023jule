@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import com.company.Library;
 public class decomposition1392 {
     public static void main(String[] args) {
         Scanner s = new Scanner(System.in);
@@ -12,15 +13,7 @@ public class decomposition1392 {
         for (int i = 0; i < arr.length; i++) {
             num[i] = Integer.parseInt(arr[i]);
         }
-        for (int j = 0; j < num.length - 1; j++) {
-            int minIdx = j;
-            for (int i = j + 1; i < num.length; i++) {
-                if (num[minIdx] > num[i]) {
-                    minIdx = i;
-                }
-            }
-            temp(num,minIdx,j);
-        }
+        Library.minIdx(num);
         System.out.println("Отсортированный массив:");
         for (int i = 0; i < num.length; i++) {
             System.out.print(num[i] + " ");

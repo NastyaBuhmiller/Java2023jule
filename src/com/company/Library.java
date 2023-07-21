@@ -734,8 +734,23 @@ public class Library {
 
 
     }
+    public static void swap1(int[] num, int minIdx, int j) {
+        int temp = num[minIdx];
+        num[minIdx] = num[j];
+        num[j] = temp;
+    }
 
-
+public static void minIdx(int[] num){
+    for (int j = 0; j < num.length - 1; j++) {
+        int minIdx = j;
+        for (int i = j + 1; i < num.length; i++) {
+            if (num[minIdx] > num[i]) {
+                minIdx = i;
+            }
+        }
+        Library.swap1(num, minIdx, j);
+    }
+}
 
 
 

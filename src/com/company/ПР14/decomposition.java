@@ -1,5 +1,5 @@
 package com.company.ПР14;
-
+import com.company.Library;
 import java.awt.*;
 
 public class decomposition {
@@ -14,15 +14,7 @@ public class decomposition {
         for (int i = 0; i < arr.length; i++) {
             num[i] = Integer.parseInt(arr[i]);
         }
-        for (int j = 0; j < num.length - 1; j++) {
-            int minIdx = j;
-            for (int i = j + 1; i < num.length; i++) {
-                if (num[minIdx] > num[i]) {
-                    minIdx = i;
-                }
-            }
-            temp(num, minIdx, j);
-        }
+        Library.minIdx(num);
         result(num);
         System.out.println();
         int count = count(num);
@@ -92,6 +84,7 @@ public class decomposition {
          di++;
          return di;
     }
+
 
 
 }
