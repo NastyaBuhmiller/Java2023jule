@@ -11,5 +11,6 @@ public class cod1 {
         } else {
             System.out.println(split);
         }
+        System.out.println("Конфликтующее изменение");
     }
 }
