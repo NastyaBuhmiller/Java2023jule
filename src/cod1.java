@@ -5,10 +5,11 @@ public class cod1 {
         Scanner s = new Scanner(System.in);
         String line;
         line = s.nextLine();
+        String[] split=new String[]{"a","b","c"};
         if (line.isEmpty()) {
             System.out.println("Исходная строка пуста");
         } else {
-            System.out.println(line);
+            System.out.println(split);
         }
     }
 }
