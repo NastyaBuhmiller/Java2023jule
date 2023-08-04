@@ -6,7 +6,7 @@ public class Task1 {
     public static void main(String[] args) throws FileNotFoundException {
         Scanner console = new Scanner(System.in);
         String n = console.nextLine();
-        File file = new File("H:\\java\\files\\task6175\\test" + n + ".txt");
+        File file = new File("G:\\java\\files\\task6175\\test" + n + ".txt");
         if (file.exists()) {//проверяем существует ли файл
             Scanner s = new Scanner(file);
             if (s.hasNext()) {//проверяем есть ли что-то в фале

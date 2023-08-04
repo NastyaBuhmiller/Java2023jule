@@ -13,6 +13,13 @@ public class Task7834 {
         arr.add(line);
         System.out.println("В коллекции длиной " + arr.size());
         System.out.println("Значение элемента на индексе " + 0 + " это " + arr.get(0));
+//        int i=0;
+//        while(arr.size()>i){
+//            line = s.nextLine();
+//            arr.add(line);
+//            System.out.println("В коллекции длиной " + arr.size());
+//            System.out.println("Значение элемента на индексе " + 0 + " это " + arr.get(0));
+//        }
         if (arr.size() > 5) {
             System.out.println("Значение элемента на индексе " + 2 + " это " + arr.get(2));
         } else {
@@ -136,6 +143,8 @@ public class Task7834 {
         }
         System.out.println();
     }
+
+
 }
 
 
