@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Task6989 {
     public static void main(String[] args) throws FileNotFoundException {
         ArrayList<String> arr = new ArrayList<>();
-        File file = new File("G:\\java\\files\\task6989\\composers.csv");
+        File file = new File("D:\\java\\files\\task6989\\composers.csv");
         if (file.exists()) {
             Scanner s = new Scanner(file);
             while (s.hasNext()) {
