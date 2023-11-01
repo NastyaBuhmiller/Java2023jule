@@ -11,7 +11,7 @@ import java.net.InetSocketAddress;
 public class Server3 {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0); //создает виртуальный порт с номером 8000
-        server.createContext("/", new Server2.MyHandler()); //создаем путь к обработчику запросов
+        server.createContext("/", new Server3.MyHandler()); //создаем путь к обработчику запросов
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
     }
