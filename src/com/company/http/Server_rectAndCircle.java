@@ -11,10 +11,10 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 
-public class Server_rect {
+public class Server_rectAndCircle {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0); //создает виртуальный порт с номером 8000
-        server.createContext("/", new Server_rect.MainHandler()); //создаем путь к обработчику запросов
+        server.createContext("/", new MainHandler()); //создаем путь к обработчику запросов
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
     }
@@ -58,7 +58,7 @@ public class Server_rect {
         @Override
         public void handle(HttpExchange t) throws IOException { //переменная t хранит запрос и ответ на него
             //String response = "Response to address " + t.getRequestURI();//создается текст ответа на запрос get..хранит то, что пишем в адресной строке
-            File f = new File("RES/Rect.html");
+            File f = new File("RES/Shapes.csv");
             System.out.println(f.getAbsolutePath());
             try {
                 if (!f.exists()) {
@@ -75,10 +75,10 @@ public class Server_rect {
                 String file;
                 if (line == null) {
                     Scanner s = new Scanner(f);
-                    String line2= Read(s);
+                    String line2 = Read(s);
                     file = head + body_open +
-                    "<svg width=\"800\" height=\"600\">\n"+line2+
-                            "</svg>\n" +body_close + foot;
+                            "<svg width=\"800\" height=\"600\">\n" + line2 +
+                            "</svg>\n" + body_close + foot;
 
                 } else {
                     String[] num = null;
@@ -134,8 +134,13 @@ public class Server_rect {
     }
 
     public static String Rect(String[] args) {
-        String rect = "<rect x=\"" + args[0] + "\" y=\"" + args[1] + "\" height=\"" + args[2] + "\" stroke=\"green\" width=\"" + args[3] + "\" opacity=\"0.1" + "\" fill=\"yellow\" />\n";
+        String rect = "<rect x=\"" + args[1] + "\" y=\"" + args[2] + "\" height=\"" + args[3] + "\" stroke=\"green\" width=\"" + args[4] + "\" opacity=\"0.1" + "\" fill=\"yellow\" />\n";
         return rect;
+    }
+
+    public static String Circle(String[] args) {
+        String circle = "<circle cx=\"" + args[1] + "\" cy=\"" + args[2] + "\" r=\"" + args[3] + "\" stroke=\"green\"  stroke-width=\"" + args[4] + "\" opacity=\"0.1" + "\" fill=\"yellow\" />\n";
+        return circle;
     }
 
     public static void FromAdressLineToWriter(String line, PrintWriter writer_rect) {
@@ -162,12 +167,15 @@ public class Server_rect {
 
             } else {
                 num = line1.split(";");
-                total = total + Rect(num);
+                if (num[0].equals("rect")) {
+                    total = total + Rect(num);
+                } else {
+                    if (num[0].equals("circle")) {
+                        total = total + Circle(num);
+                    }
+                }
             }
         }
         return total;
     }
-
 }
-
-
