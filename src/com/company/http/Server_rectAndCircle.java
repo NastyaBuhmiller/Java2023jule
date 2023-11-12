@@ -54,6 +54,43 @@ public class Server_rectAndCircle {
         }
     }
 
+    public static String BodyRect_open() {
+        return "<body>\n" +
+                "\n" +
+                "<h1>Прямоугольник</h1>\n" +
+                "<form action=\"/rect\">\n" +
+                "    <input type=\"range\" name=\"x\" min=\"0\" max=\"800\"><br>\n" +
+                "    <input type=\"range\" name=\"y\" min=\"0\"max=\"600\"><br>\n" +
+                "    <input type=\"range\" name=\"height\" min=\"0\"max=\"1000\"><br>\n" +
+                "    <input type=\"range\" name=\"width\" min=\"0\" max=\"1000\"><br>\n" +
+                "    <input type=\"submit\" value=\"Submit\">\n" +
+                "</form>\n";
+
+    }
+
+
+    public static String Head() {
+        return ("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<meta charset=\"utf-8\"/>\n" +
+                "<head/>\n");
+    }
+
+    public static String BodyCircle_open() {
+        return "<body>\n" +
+                "\n" +
+                "<h1>Круг</h1>\n" +
+                "<form action=\"/rect\">\n" +
+                "    <input type=\"range\" name=\"cx\" min=\"0\" max=\"800\"><br>\n" +
+                "    <input type=\"range\" name=\"cy\" min=\"0\"max=\"600\"><br>\n" +
+                "    <input type=\"range\" name=\"r\" min=\"0\"max=\"1000\"><br>\n" +
+                "    <input type=\"range\" name=\"stroke-width\" min=\"0\" max=\"10\"><br>\n" +
+                "    <input type=\"submit\" value=\"Submit\">\n" +
+                "</form>\n";
+
+    }
+
     static class MainHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException { //переменная t хранит запрос и ответ на него
@@ -70,13 +107,14 @@ public class Server_rectAndCircle {
                 String x, y, height, width;
                 String head = Head();
                 String foot = Foot();
-                String body_open = Body_open();
+                String bodyRect_open = BodyRect_open();
+                String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
                 if (line == null) {
                     Scanner s = new Scanner(f);
                     String line2 = Read(s);
-                    file = head + body_open +
+                    file = head + bodyRect_open +
                             "<svg width=\"800\" height=\"600\">\n" + line2 +
                             "</svg>\n" + body_close + foot;
 
@@ -87,7 +125,25 @@ public class Server_rectAndCircle {
                     writer_rect.close();
                     Scanner s = new Scanner(f);
                     total = Read(s);
-                    file = head + body_open +
+                    file = head + bodyRect_open +
+                            "<svg width=\"800\" height=\"600\">\n" + total +
+                            "</svg>\n" + body_close + foot;
+                }
+                if (line == null) {
+                    Scanner s = new Scanner(f);
+                    String line2 = Read(s);
+                    file = head + bodyCircle_open +
+                            "<svg width=\"800\" height=\"600\">\n" + line2 +
+                            "</svg>\n" + body_close + foot;
+
+                } else {
+                    String[] num = null;
+                    String total = "";
+                    FromAdressLineToWriter(line, writer_rect);
+                    writer_rect.close();
+                    Scanner s = new Scanner(f);
+                    total = Read(s);
+                    file = head + bodyCircle_open +
                             "<svg width=\"800\" height=\"600\">\n" + total +
                             "</svg>\n" + body_close + foot;
                 }
@@ -101,28 +157,6 @@ public class Server_rectAndCircle {
                 e.printStackTrace();
             }
         }
-    }
-
-
-    public static String Head() {
-        return ("<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "<meta charset=\"utf-8\"/>\n" +
-                "<head/>\n");
-    }
-
-    public static String Body_open() {
-        return "<body>\n" +
-                "\n" +
-                "<form action=\"/rect\">\n" +
-                "    <input type=\"range\" name=\"x\" min=\"0\" max=\"800\"><br>\n" +
-                "    <input type=\"range\" name=\"y\" min=\"0\"max=\"600\"><br>\n" +
-                "    <input type=\"range\" name=\"height\" min=\"0\"max=\"1000\"><br>\n" +
-                "    <input type=\"range\" name=\"width\" min=\"0\" max=\"1000\"><br>\n" +
-                "    <input type=\"submit\" value=\"Submit\">\n" +
-                "</form>\n";
-
     }
 
     public static String Body_close() {
