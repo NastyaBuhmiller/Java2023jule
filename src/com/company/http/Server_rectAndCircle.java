@@ -39,7 +39,7 @@ public class Server_rectAndCircle {
                 "    <input type=\"range\" name=\"r\" min=\"0\"max=\"1000\"><br>\n" +
                 "    <input type=\"range\" name=\"stroke-width\" min=\"0\" max=\"10\"><br>\n" +
                 "    <input type=\"submit\" value=\"Submit\">\n" +
-                "<input =\\\"name\\\" value=\\\"Name\\\">\\n\""+
+                "<input name=\"id\" value=\"Name\">\n" +
                 "</form>\n" +
                 "<h1>Прямоугольник</h1>\n" +
                 "<form action=\"/rect\">\n" +
@@ -48,7 +48,7 @@ public class Server_rectAndCircle {
                 "    <input type=\"range\" name=\"height\" min=\"0\"max=\"1000\"><br>\n" +
                 "    <input type=\"range\" name=\"width\" min=\"0\" max=\"1000\"><br>\n" +
                 "    <input type=\"submit\" value=\"Submit\">\n" +
-                "<input =\\\"name\\\" value=\\\"Name\\\">\\n\""+
+                "<input name=\"id\" value=\"Name\">\n" +
                 "</form>\n";
 
     }
@@ -63,22 +63,22 @@ public class Server_rectAndCircle {
     }
 
 
-        static class CircleHandler implements HttpHandler {
-            @Override
-            public void handle(HttpExchange t) throws IOException { //переменная t хранит запрос и ответ на него
-                //String response = "Response to address " + t.getRequestURI();//создается текст ответа на запрос get..хранит то, что пишем в адресной строке
-                File f = new File("RES/Shapes.csv");
-                Scanner s = new Scanner(f);
-                Begin(f, t);
-                PrintWriter writer_rect = new PrintWriter(new FileOutputStream(f, true));
-                String line = t.getRequestURI().getQuery();
-                if (line == null) {
-                } else {
-                    FromAdressLineCircleToWriter(line, writer_rect);
-                    writer_rect.close();
-                }
+    static class CircleHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) throws IOException { //переменная t хранит запрос и ответ на него
+            //String response = "Response to address " + t.getRequestURI();//создается текст ответа на запрос get..хранит то, что пишем в адресной строке
+            File f = new File("RES/Shapes.csv");
+            Scanner s = new Scanner(f);
+            Begin(f, t);
+            PrintWriter writer_rect = new PrintWriter(new FileOutputStream(f, true));
+            String line = t.getRequestURI().getQuery();
+            if (line == null) {
+            } else {
+                FromAdressLineCircleToWriter(line, writer_rect);
+                writer_rect.close();
             }
         }
+    }
 
 
     static class RectHandler implements HttpHandler {
@@ -111,7 +111,7 @@ public class Server_rectAndCircle {
             String file;
             Scanner s = new Scanner(f);
             String line2 = Read(s);
-            file =  head + bodyCircle_open +
+            file = head + bodyCircle_open +
                     "<svg width=\"800\" height=\"600\">\n" + line2 +
                     "</svg>\n" + body_close + foot;
             t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
@@ -162,7 +162,6 @@ public class Server_rectAndCircle {
     }
 
 
-
     public static String Body_close() {
         return "</body>\n";
     }
@@ -183,7 +182,7 @@ public class Server_rectAndCircle {
 
     public static void FromAdressLineCircleToWriter(String line, PrintWriter writer_rect) {
         String[] arr = line.split("&");
-        String cx, cy, r, stroke_width;
+        String cx, cy, r, stroke_width,name;
         int index = arr[0].indexOf("=");
         cx = arr[0].substring(index + 1);
         int index1 = arr[1].indexOf("=");
@@ -192,13 +191,15 @@ public class Server_rectAndCircle {
         r = arr[2].substring(index2 + 1);
         int index3 = arr[3].indexOf("=");
         stroke_width = arr[3].substring(index3 + 1);
-        writer_rect.println("circle" + ";" + cx + ";" + cy + ";" + r + ";" + stroke_width);
+        int index4=arr[4].indexOf("=");
+        name= arr[4].substring(index4 + 1);
+        writer_rect.println("circle" + ";" + cx + ";" + cy + ";" + r + ";" + stroke_width+";"+name);
 
     }
 
     public static void FromAdressLineRectToWriter(String line, PrintWriter writer_rect) {
         String[] arr = line.split("&");
-        String x, y, height, width;
+        String x, y, height, width,name;
         int index = arr[0].indexOf("=");
         x = arr[0].substring(index + 1);
         int index1 = arr[1].indexOf("=");
@@ -207,7 +208,9 @@ public class Server_rectAndCircle {
         height = arr[2].substring(index2 + 1);
         int index3 = arr[3].indexOf("=");
         width = arr[3].substring(index3 + 1);
-        writer_rect.println("rect" + ";" + x + ";" + y + ";" + height + ";" + width);
+        int index4=arr[4].indexOf("=");
+        name= arr[4].substring(index4 + 1);
+        writer_rect.println("rect" + ";" + x + ";" + y + ";" + height + ";" + width+ ";" +name);
 
     }
 
@@ -226,11 +229,10 @@ public class Server_rectAndCircle {
                     if (num[0].equals("circle")) {
                         total = total + Circle(num);
                     }
-                } else {
-                    total=total+num[0];
                 }
             }
-        }
-        return total;
+        } return total;
     }
 }
+
+
