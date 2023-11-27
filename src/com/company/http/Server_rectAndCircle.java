@@ -39,6 +39,7 @@ public class Server_rectAndCircle {
                 "    <input type=\"range\" name=\"r\" min=\"0\"max=\"1000\"><br>\n" +
                 "    <input type=\"range\" name=\"stroke-width\" min=\"0\" max=\"10\"><br>\n" +
                 "    <input type=\"submit\" value=\"Submit\">\n" +
+                "<input =\\\"name\\\" value=\\\"Name\\\">\\n\""+
                 "</form>\n" +
                 "<h1>Прямоугольник</h1>\n" +
                 "<form action=\"/rect\">\n" +
@@ -47,6 +48,7 @@ public class Server_rectAndCircle {
                 "    <input type=\"range\" name=\"height\" min=\"0\"max=\"1000\"><br>\n" +
                 "    <input type=\"range\" name=\"width\" min=\"0\" max=\"1000\"><br>\n" +
                 "    <input type=\"submit\" value=\"Submit\">\n" +
+                "<input =\\\"name\\\" value=\\\"Name\\\">\\n\""+
                 "</form>\n";
 
     }
@@ -224,6 +226,8 @@ public class Server_rectAndCircle {
                     if (num[0].equals("circle")) {
                         total = total + Circle(num);
                     }
+                } else {
+                    total=total+num[0];
                 }
             }
         }
