@@ -18,6 +18,7 @@ public class Films {
             while (s.hasNext()) {
                 String line1 = s.nextLine();
                 String line2 = h.nextLine();
+                int i = 0;
                 if (line1.isEmpty()) {
 
                 } else {
@@ -25,11 +26,14 @@ public class Films {
                     if (num.length < 2) {
 
                     } else {
-                        if (num[0].equals(value)) {
+                        while (s.hasNext()) {
                             String[] arr;
                             arr = line2.split("\t");
-                            total = total + arr[1];
-                            System.out.println(total);
+                            if (num[0].equals(value)) {
+                                total = total + arr[0];
+                                System.out.println(total);
+                                i = i + 1;
+                            }
                         }
                     }
                 }
