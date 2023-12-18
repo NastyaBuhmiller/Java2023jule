@@ -8,17 +8,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.sql.*;
 
-public class Server_Films {
+public class ServerFilmsJDBC {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0); //создает виртуальный порт с номером 8000
-        server.createContext("/", new MainHandler()); //создаем путь к обработчику запросов
-        server.createContext("/category", new Name_filmHandler());
-        server.createContext("/film", new Info_filmHandler());
+        server.createContext("/", new ServerFilmsJDBC.MainHandler()); //создаем путь к обработчику запросов
+        server.createContext("/category", new ServerFilmsJDBC.Name_filmHandler());
+        server.createContext("/film", new ServerFilmsJDBC.Info_filmHandler());
+        Class.forName("org.postgresql.Driver");
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
+
     }
 
 
@@ -46,6 +53,10 @@ public class Server_Films {
                 writer1.write(file);
                 writer1.close();
             } catch (IOException e) {
+                System.out.println(f.getAbsolutePath());
+                e.printStackTrace();
+            }
+            catch (SQLException e) {
                 System.out.println(f.getAbsolutePath());
                 e.printStackTrace();
             }
@@ -83,6 +94,10 @@ public class Server_Films {
                 writer1.close();
             } catch (IOException e) {
                 System.out.println(file_film.getAbsolutePath());
+                e.printStackTrace();
+            }
+            catch (SQLException e) {
+                System.out.println(e.getMessage());
                 e.printStackTrace();
             }
 
@@ -150,49 +165,38 @@ public class Server_Films {
         return "</html>";
     }
 
-    public static String Read(Scanner s) {
-        Scanner k = new Scanner(System.in);
-        String[] num;
+    public static String Read(Scanner s)throws  SQLException {
         String total = "";
-        while (s.hasNext()) {
-            String line = s.nextLine();
-            if (line.isEmpty()) {
-
-            } else {
-                num = line.split("\t");
-                if (num.length < 2) {
-
-                } else {
-                    total = total + "<li><a href=\"category?id=" + num[0] + "\">" + num[1] + "</a>" + "</li>";
-                }
-            }
+        Connection conn= DriverManager.getConnection("jdbc:postgresql://localhost:5432/dvdrental",
+                "postgres","123");
+        Statement stm=conn.createStatement();
+        ResultSet resultSet=stm.executeQuery ("select category_id, name from category");
+        while (resultSet.next()){
+            int id=resultSet.getInt("category_id");
+            String name =resultSet.getString("name");
+            total = total + "<li><a href=\"category?id=" + id + "\">" + name + "</a>" + "</li>";
         }
         return total;
     }
 
 
-    public static String ReadFilm(Scanner scanner_film, Scanner scanner_category, Scanner scanner_film_category, HttpExchange t) {
-        String[] num;
+    public static String ReadFilm(Scanner scanner_film, Scanner scanner_category, Scanner scanner_film_category, HttpExchange t) throws  SQLException{
         String total = "";
         ArrayList<String> i_category = new ArrayList<>();
         String line1 = t.getRequestURI().getQuery();
-        String id = FromAdressLineCategory_filmToWriter(line1);
-        while (scanner_film_category.hasNext()) {
-            String[] arr;
-            String line2 = scanner_film_category.nextLine();
-            arr = line2.split("\t");
-            if (arr.length > 2 && arr[1].equals(id)) {
-                i_category.add(arr[0]);
-            }
+        int id = Integer.parseInt(FromAdressLineCategory_filmToWriter(line1));
+        String query=("select title, film_id from film where film_id in (select film_id from film_category where category_id= ?)");
+        Connection conn= DriverManager.getConnection("jdbc:postgresql://localhost:5432/dvdrental",
+                "postgres","123");
+        PreparedStatement stm=conn.prepareStatement(query);
+        stm.setInt(1,id);
+        ResultSet resultSet=stm.executeQuery();
+        while (resultSet.next()){
+            int id_film=resultSet.getInt("film_id");
+            String title =resultSet.getString("title");
+            total = total + "<li><a href=\"film?id=" + id_film + "\">" + title + "</a>" + "</li>";
         }
-        while (scanner_film.hasNext()) {
-            String[] arr1;
-            String line3 = scanner_film.nextLine();
-            arr1 = line3.split("\t");
-            if (arr1.length > 2 && i_category.contains(arr1[0])) {
-                total = total + "<li><a href=\"film?id=" + arr1[0] + "\">" + arr1[1] + "</a>" + "</li>";
-            }
-        }
+
 
         return total;
     }
@@ -218,7 +222,7 @@ public class Server_Films {
                 total = total + "<li><a href=\"film?id=" + arr1[0] + "\">" + arr1[1] + arr1[2] + "</a>" + "</li>";
             }
         }
-
+//select first_name, last_name from actor where actor_id in (select actor_id from film_actor where film_id=194 )
         return total;
     }
 
@@ -283,5 +287,3 @@ public class Server_Films {
         return film_id;
     }
 }
-
-
