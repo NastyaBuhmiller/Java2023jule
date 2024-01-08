@@ -3,7 +3,7 @@ package com.company.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-
+import java.io.FileNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,6 +18,7 @@ public class ServerFilmsJDBC {
         server.createContext("/", new ServerFilmsJDBC.MainHandler()); //создаем путь к обработчику запросов
         server.createContext("/category", new ServerFilmsJDBC.Name_filmHandler());
         server.createContext("/film", new ServerFilmsJDBC.Info_filmHandler());
+        server.createContext("/add", new ServerFilmsJDBC.Create_Handler());
         Class.forName("org.postgresql.Driver");
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
@@ -25,10 +26,9 @@ public class ServerFilmsJDBC {
     }
 
 
-    public static String Read(Scanner s) throws SQLException {
+    public static String Read() throws SQLException,FileNotFoundException {
         String total = "";
-        Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dvdrental_pg94",
-                "postgres", "iris1997");
+        Connection conn = Read_config_dvdrental();
         Statement stm = conn.createStatement();
         ResultSet resultSet = stm.executeQuery("select category_id, name from category");
         while (resultSet.next()) {
@@ -39,13 +39,12 @@ public class ServerFilmsJDBC {
         return total;
     }
 
-    public static String ReadFilm(Scanner scanner_film, Scanner scanner_category, Scanner scanner_film_category, HttpExchange t) throws SQLException {
+    public static String ReadFilm(HttpExchange t) throws SQLException,FileNotFoundException {
         String total = "";
         String line1 = t.getRequestURI().getQuery();
         int id = Integer.parseInt(FromAdressLineCategory_filmToWriter(line1));
         String query = ("select title, film_id from film where film_id in (select film_id from film_category where category_id= ?)");
-        Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dvdrental_pg94",
-                "postgres", "iris1997");
+        Connection conn = Read_config_dvdrental();
         PreparedStatement stm = conn.prepareStatement(query);
         stm.setInt(1, id);
         ResultSet resultSet = stm.executeQuery();
@@ -62,42 +61,48 @@ public class ServerFilmsJDBC {
     static class Info_filmHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
-            File file_film = new File("RES/film.dat");
-            File file_category = new File("RES/category.dat");
-            File file_film_category = new File("RES/film_category.dat");
-            File id_actor = new File("RES/film_actor.dat");
-            File name_actor = new File("RES/actor.dat");
-            try {
-                Scanner scanner_film = new Scanner(file_film);
-                Scanner scanner_category = new Scanner(file_category);
-                Scanner scanner_film_category = new Scanner(file_film_category);
-                Scanner scanner_id_actor = new Scanner(id_actor);
-                Scanner scanner_name_actor = new Scanner(name_actor);
-                if (!file_film.exists()) {
-                    file_film.createNewFile();
-                }
+                try {
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
-                String line = ReadNameFilm(scanner_film, scanner_film_category, t);
-                scanner_film_category = new Scanner(file_film_category);
-                String name_actor1 = Read_actor(scanner_film_category, scanner_id_actor, scanner_name_actor, t);
+                String line = ReadFilm(t);
+                String name_actor1 = Read_actor(t);
                 file = head + bodyCircle_open + "<ul>" +
                         line + name_actor1 + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
                 writer1.write(file);
                 writer1.close();
-            } catch (IOException e) {
-                System.out.println(file_film.getAbsolutePath());
+            } catch (IOException | SQLException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
+    static class Create_Handler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
+                try {
+                String head = Head();
+                String foot = Foot();
+                String Body_add_film = Body_add_film();
+                String body_close = Body_close();
+                String file;
+                String line = ReadFilm(t);
+                String name_actor1 = Read_actor(t);
+                file = head + Body_add_film + "<ul>" +
+                        line + name_actor1 + "</ul>" + body_close + foot;
+                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
+                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
+                writer1.write(file);
+                writer1.close();
+            } catch (IOException | SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static String Head() {
         return ("<!DOCTYPE html>\n" +
@@ -107,6 +112,15 @@ public class ServerFilmsJDBC {
                 "<head/>\n");
     }
 
+    public static String Body_add_film() {
+        return "<body>\n" +
+                "\n"+
+                "<h1>Введите полную информацию о фильме:</h1>\n" +
+                "<form action=\"/add_film\">\n" +
+                "    <input name= ><br>\n" +
+                "    <input type=\"submit\" value=\"Submit\">\n" +
+                "</form>\n";
+    }
     public static String BodyCircle_open() {
         return "<body>\n" +
                 "\n";
@@ -120,17 +134,16 @@ public class ServerFilmsJDBC {
         return "</html>";
     }
 
-    public static String Read_actor(Scanner scanner_film_category, Scanner scanner_id_actor, Scanner scanner_name_actor, HttpExchange t) throws SQLException {
+    public static String Read_actor( HttpExchange t) throws SQLException,FileNotFoundException {
         String total = "";
         String line1 = t.getRequestURI().getQuery();
         int id = Integer.parseInt(FromAdressLineName_actorToWriter(line1));
-        String query = ("inventory_id, film_id, store_id,last_update from inventory where film_id in (select film_id from film_category where category_id= ?)");
-        Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dvdrental_pg94",
-                "postgres", "iris1997");
+        String query = ("select inventory_id, film_id, store_id,last_update from inventory where film_id in (select film_id from film_category where category_id= ?)");
+        Connection conn = Read_config_dvdrental();
         PreparedStatement stm = conn.prepareStatement(query);
         stm.setInt(1, id);
         ResultSet resultSet = stm.executeQuery();
-//        String film_id = FromAdressLineName_actorToWriter(line1);
+        // String film_id = FromAdressLineName_actorToWriter(line1);
 //        while (scanner_id_actor.hasNext()) {
 //            String[] arr;
 //            String line2 = scanner_id_actor.nextLine();
@@ -145,9 +158,9 @@ public class ServerFilmsJDBC {
 //            arr1 = line3.split("\t");
 //            if (arr1.length > 2 && id_actor.contains(arr1[0])) {
 //                total = total + "<li><a href=\"film?id=" + arr1[0] + "\">" + arr1[1] + arr1[2] + "</a>" + "</li>";
-
+//
 //}
-//select first_name, last_name from actor where actor_id in (select actor_id from film_actor where film_id=194 )
+
         while (resultSet.next()) {
             int inventory_id = resultSet.getInt("inventory_id");
             int film_id = resultSet.getInt("film_id");
@@ -158,23 +171,28 @@ public class ServerFilmsJDBC {
         return total;
     }
 
+    public static Connection Read_config_dvdrental()throws FileNotFoundException,SQLException{
+        File dvdrental_config = new File("C:\\TMP\\dvdrental_config.txt");
+        Scanner scanner_dvdrental_config = new Scanner(dvdrental_config);
+        int i=0;
+        scanner_dvdrental_config.nextLine();//чтение шапки файла
+        String line=scanner_dvdrental_config.nextLine();
+        String[] arr = line.split(";");
+        Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/"+arr[0],
+                arr[1],arr[2]);
+      return conn;
+    }
+
     static class MainHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
-            File f = new File("RES/category.dat");
-            File j = new File("RES/film_category.dat");
-            try {
-                Scanner s = new Scanner(f);
-                Scanner h = new Scanner(j);
-                if (!f.exists()) {
-                    f.createNewFile();
-                }
+                try {
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
-                String line = Read(s);
+                String line = Read();
                 file = head + bodyCircle_open + "<ul>" +
                         line + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
@@ -182,11 +200,9 @@ public class ServerFilmsJDBC {
                 writer1.write(file);
                 writer1.close();
             } catch (IOException e) {
-                System.out.println(f.getAbsolutePath());
-                e.printStackTrace();
+               e.printStackTrace();
             } catch (SQLException e) {
-                System.out.println(f.getAbsolutePath());
-                e.printStackTrace();
+               e.printStackTrace();
             }
 
         }
@@ -195,25 +211,13 @@ public class ServerFilmsJDBC {
     static class Name_filmHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
-            File file_film = new File("RES/film.dat");
-            File file_category = new File("RES/category.dat");
-            File file_film_category = new File("RES/film_category.dat");
-
-            try {
-                Scanner scanner_film = new Scanner(file_film);
-                Scanner scanner_category = new Scanner(file_category);
-                Scanner scanner_film_category = new Scanner(file_film_category);
-
-                if (!file_film.exists()) {
-                    file_film.createNewFile();
-                }
+              try {
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
-                String line = ReadFilm(scanner_film, scanner_category, scanner_film_category, t);
-
+                String line = ReadFilm(t);
                 file = head + bodyCircle_open + "<ul>" +
                         line + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
@@ -221,7 +225,6 @@ public class ServerFilmsJDBC {
                 writer1.write(file);
                 writer1.close();
             } catch (IOException e) {
-                System.out.println(file_film.getAbsolutePath());
                 e.printStackTrace();
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
@@ -231,14 +234,14 @@ public class ServerFilmsJDBC {
         }
     }
 
-    public static String ReadNameFilm(Scanner scanner_film, Scanner scanner_film_category, HttpExchange t) {
-        String total = "";
-        ArrayList<String> i_category = new ArrayList<>();
-        String line1 = t.getRequestURI().getQuery();
-        String film_id = FromAdressLineid_filmToWriter(line1);
-        total = infoFilm(scanner_film, film_id);
-        return total;
-    }
+//    public static String ReadNameFilm(HttpExchange t) {
+//        String total = "";
+//        ArrayList<String> i_category = new ArrayList<>();
+//        String line1 = t.getRequestURI().getQuery();
+//        String film_id = FromAdressLineid_filmToWriter(line1);
+//        total = infoFilm(film_id);
+//        return total;
+//    }
 
     public static String FromAdressLineCategory_filmToWriter(String line) {
         String[] arr = line.split("&");
