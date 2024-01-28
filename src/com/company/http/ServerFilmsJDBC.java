@@ -3,13 +3,13 @@ package com.company.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import java.io.FileNotFoundException;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ServerFilmsJDBC {
@@ -124,26 +124,25 @@ public class ServerFilmsJDBC {
             }
         }
     }
-    static class add_film_Handler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
-            try {
-                String head = Head();
-                String foot = Foot();
-                String Body_add_film = Body_add_film();
-                String body_close = Body_close();
-                String file;
-                String add_film=Read_add_Film(t);
-                file = head + Body_add_film + "<ul>" +add_film+
-                        "</ul>" + body_close + foot;
-                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
-                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
-                writer1.write(file);
-                writer1.close();
-            } catch (IOException| SQLException  e) {
-                e.printStackTrace();
-            }
-        }
+    public static String Read_add_actor(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        String line1 = t.getRequestURI().getQuery();
+        String query = ("insert into actor (first_name,last_name) values (?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+        String line = "";
+        String[] arr = line1.split("&");
+        String first_name, last_name;
+        int index = arr[0].indexOf("=");
+        first_name = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        last_name = arr[1].substring(index1 + 1);
+        stm.setString(1, first_name);
+        stm.setString(2, last_name);
+        int resultSet = stm.executeUpdate();
+        total = total + "<li><a href=\"film?id=>" + first_name + last_name + "</a>" + "</li>";
+        return total;
+
     }
     public static String Read_add_Film(HttpExchange t)throws SQLException,FileNotFoundException {
         String total = "";
@@ -154,7 +153,7 @@ public class ServerFilmsJDBC {
 
         String line="";
         String[] arr = line1.split("&");
-        String title, description,release_year, language_id,length;;
+        String title, description,release_year, language_id,length;
         int index = arr[0].indexOf("=");
         title = arr[0].substring(index + 1);
         int index1 = arr[1].indexOf("=");
@@ -178,6 +177,29 @@ public class ServerFilmsJDBC {
         total = total + "<li><a href=\"film?id=>" + title +description+release_year+ language_id+length+ "</a>" + "</li>";
         return total;
 
+    }
+
+    static class add_film_Handler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
+            try {
+                String head = Head();
+                String foot = Foot();
+                String Body_add_film = Body_add_film();
+                String body_close = Body_close();
+                String file;
+                String add_film=Read_add_Film(t);
+                String add_actor = Read_add_actor(t);
+                file = head + Body_add_film + "<ul>" + add_film + add_actor +
+                        "</ul>" + body_close + foot;
+                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
+                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
+                writer1.write(file);
+                writer1.close();
+            } catch (IOException| SQLException  e) {
+                e.printStackTrace();
+            }
+        }
     }
     public static String Head() {
         return ("<!DOCTYPE html>\n" +
