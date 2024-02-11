@@ -22,12 +22,173 @@ public class ServerFilmsJDBC {
         server.createContext("/add_film", new ServerFilmsJDBC.add_film_Handler());
         server.createContext("/add_actor", new ServerFilmsJDBC.add_actor_Handler());
         server.createContext("/connect_film_actor", new ServerFilmsJDBC.Connect_film_actor_Handler());
+        server.createContext("/connect_film_category", new ServerFilmsJDBC.Connect_film_category_Handler());
         Class.forName("org.postgresql.Driver");
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
 
     }
 
+    public static String Read_add_Film_id(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        String line1 = t.getRequestURI().getQuery();
+        Scanner s = new Scanner((t.getRequestBody()));
+        String params = s.nextLine();
+        s.close();
+        String query = ("insert into film_category (film_id,category_id) values (?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+        String line = "";
+        String[] arr = params.split("&");
+        String film_id, category_id;
+        int index = arr[0].indexOf("=");
+        film_id = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        category_id = arr[1].substring(index1 + 1);
+        int category_id1 = Integer.parseInt(category_id);
+        int film_id1 = Integer.parseInt(film_id);
+        stm.setInt(1, film_id1);
+        stm.setInt(2, category_id1);
+        int resultSet = stm.executeUpdate();
+        total = "<li><a href=\"film?film_id=" + film_id1 + "\"> посмотреть </a>" + "</li>";
+        return total;
+    }
+
+    public static String Read_add_Film_actor(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        String line1 = t.getRequestURI().getQuery();
+        Scanner s = new Scanner((t.getRequestBody()));
+        String params = s.nextLine();
+        s.close();
+        String query = ("insert into film_actor (actor_id,film_id) values (?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+        String line = "";
+        String[] arr = params.split("&");
+        String actor_id, film_id;
+        int index = arr[0].indexOf("=");
+        film_id = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        actor_id = arr[1].substring(index1 + 1);
+        int actor_id1 = Integer.parseInt(actor_id);
+        int film_id1 = Integer.parseInt(film_id);
+        stm.setInt(1, actor_id1);
+        stm.setInt(2, film_id1);
+        int resultSet = stm.executeUpdate();
+        total = "<li><a href=\"film?film_id=" + film_id1 + "\"> посмотреть </a>" + "</li>";
+        return total;
+    }
+
+    public static String Read_add_actor(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        //получение параметров get запроса
+        String line1 = t.getRequestURI().getQuery();
+        //получение параметров POST запроса
+        Scanner s = new Scanner((t.getRequestBody()));
+        String params = s.nextLine();
+        s.close();
+        String query = ("insert into actor (first_name,last_name) values (?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+        String line = "";
+        String[] arr = params.split("&");
+        String first_name, last_name;
+        int index = arr[0].indexOf("=");
+        first_name = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        last_name = arr[1].substring(index1 + 1);
+        stm.setString(1, first_name);
+        stm.setString(2, last_name);
+        int resultSet = stm.executeUpdate();
+        total = total + "<li><a href=\"actor?id=>" + first_name + last_name + "</a>" + "</li>";
+        return total;
+
+    }
+
+    public static String Read_add_Film(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        String line1 = t.getRequestURI().getQuery();
+        Scanner s = new Scanner((t.getRequestBody()));
+        String params = s.nextLine();
+        s.close();
+        String query = ("insert into film (title,description,release_year, language_id,length) values (?,?,?,?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+
+        String line = "";
+        String[] arr = params.split("&");
+        String title, description, release_year, language_id, length;
+        int index = arr[0].indexOf("=");
+        title = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        description = arr[1].substring(index1 + 1);
+        int index2 = arr[2].indexOf("=");
+        release_year = arr[2].substring(index2 + 1);
+        int index3 = arr[3].indexOf("=");
+        language_id = arr[3].substring(index3 + 1);
+        int index4 = arr[4].indexOf("=");
+        length = arr[4].substring(index4 + 1);
+        int release_year1 = Integer.parseInt(release_year);
+        int language_id1 = Integer.parseInt(language_id);
+        int length1 = Integer.parseInt(length);
+        stm.setString(1, title);
+        stm.setString(2, description);
+        stm.setInt(3, release_year1);
+        stm.setInt(4, language_id1);
+        stm.setInt(5, length1);
+        int resultSet = stm.executeUpdate();
+
+        total = total + "<li><a href=\"film?id=>" + title + description + release_year + language_id + length + "</a>" + "</li>";
+        return total;
+
+    }
+
+    public static String Body_connect_film_actor(HttpExchange t) {
+        try {
+            String Read_films_for_options = Read_films_for_options(t);
+            String Read_films_for_actors = Read_films_for_actors(t);
+            return "<body>\n" +
+                    "\n" +
+                    "<form action=\"/connect_film_actor\" method='post'>\n" +
+                    "<select name= \"film_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите фильм </option><br>\n" +
+                    Read_films_for_options +
+                    "</select><br>\n" +
+                    "<select name= \"actor_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите актера </option><br>\n" +
+                    Read_films_for_actors +
+                    "</select><br>\n" +
+                    "<input type=\"submit\" value=\"Submit\">\n" +
+                    "</form>" +
+                    "\n";
+        } catch(IOException | SQLException e){
+            e.printStackTrace();
+        } return "";
+    }
+
+    public static String Body_connect_film_category(HttpExchange t) {
+        try {
+            String Read_films_for_options = Read_films_for_options(t);
+            String Read_category_films = Read_category_films(t);
+            return "<body>\n" +
+                    "\n" +
+                    "<form action=\"/connect_film_category\" method='post'>\n" +
+                    "<select name= \"film_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите id фильма </option><br>\n" +
+                    Read_films_for_options +
+                    "</select><br>\n" +
+                    "<select name= \"film_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите категорию фильма </option><br>\n" +
+                    Read_category_films +
+                    "</select><br>\n" +
+                    "<input type=\"submit\" value=\"Submit\">\n" +
+                    "</form>" +
+                    "\n";
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 
     public static String Read() throws SQLException, FileNotFoundException {
         String total = "";
@@ -80,6 +241,49 @@ public class ServerFilmsJDBC {
 
     }
 
+    public static String Read_category_films(HttpExchange t) throws SQLException, FileNotFoundException {
+        StringBuilder total_get_actors = new StringBuilder();
+        String options = "";
+        String query_get_actors = ("select category_id,name from category ");
+        Connection conn_get_films = Read_config_dvdrental();
+        PreparedStatement stm_get_films = conn_get_films.prepareStatement(query_get_actors);
+        ResultSet resultSet_get_actors = stm_get_films.executeQuery();
+        while (resultSet_get_actors.next()) {
+            String category_id = resultSet_get_actors.getString("category_id");
+            String name = resultSet_get_actors.getString("name");
+            String actor_id = resultSet_get_actors.getString("actor_id");
+            total_get_actors.append("<option value=");
+            total_get_actors.append(category_id);
+            total_get_actors.append(">");
+            total_get_actors.append(name);
+            total_get_actors.append("</option>");
+        }
+        options = total_get_actors.toString();
+        return options;
+    }
+
+    public static String Read_films_for_actors(HttpExchange t) throws SQLException, FileNotFoundException {
+        StringBuilder total_get_actors = new StringBuilder();
+        String options = "";
+        String query_get_actors = ("select actor_id,first_name, last_name from actor ");
+        Connection conn_get_films = Read_config_dvdrental();
+        PreparedStatement stm_get_films = conn_get_films.prepareStatement(query_get_actors);
+        ResultSet resultSet_get_actors = stm_get_films.executeQuery();
+        while (resultSet_get_actors.next()) {
+            String first_name = resultSet_get_actors.getString("first_name");
+            String last_name = resultSet_get_actors.getString("last_name");
+            String actor_id = resultSet_get_actors.getString("actor_id");
+            total_get_actors.append("<option value=");
+            total_get_actors.append(actor_id);
+            total_get_actors.append(">");
+            total_get_actors.append(first_name);
+            total_get_actors.append(last_name);
+            total_get_actors.append("</option>");
+        }
+        options = total_get_actors.toString();
+        return options;
+    }
+
     static class Info_filmHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
@@ -125,144 +329,6 @@ public class ServerFilmsJDBC {
         }
     }
 
-    public static String Read_add_actor(HttpExchange t) throws SQLException, FileNotFoundException {
-        String total = "";
-        //получение параметров get запроса
-        String line1 = t.getRequestURI().getQuery();
-        //получение параметров POST запроса
-        Scanner s = new Scanner((t.getRequestBody()));
-        String params = s.nextLine();
-        s.close();
-        String query = ("insert into actor (first_name,last_name) values (?,?)");
-        Connection conn = Read_config_dvdrental();
-        PreparedStatement stm = conn.prepareStatement(query);
-        String[] arr = params.split("&");
-        String first_name, last_name;
-        int index = arr[0].indexOf("=");
-        first_name = arr[0].substring(index + 1);
-        int index1 = arr[1].indexOf("=");
-        last_name = arr[1].substring(index1 + 1);
-        stm.setString(1, first_name);
-        stm.setString(2, last_name);
-        int resultSet = stm.executeUpdate();
-        total=total+"<li><a href=\"actor?id=>"+first_name+last_name+"</a>"+"</li>";
-        return total;
-    }
-
-    public static String Read_add_Film(HttpExchange t) throws SQLException, FileNotFoundException {
-        String total = "";
-        String line1 = t.getRequestURI().getQuery();
-        Scanner s = new Scanner((t.getRequestBody()));
-        String params = s.nextLine();
-        s.close();
-        String query = ("insert into film (title,description,release_year, language_id,length) values (?,?,?,?,?)");
-        Connection conn = Read_config_dvdrental();
-        PreparedStatement stm = conn.prepareStatement(query);
-        String line = "";
-        String[] arr = params.split("&");
-        String title, description, release_year, language_id, length;
-        int index = arr[0].indexOf("=");
-        title = arr[0].substring(index + 1);
-        int index1 = arr[1].indexOf("=");
-        description = arr[1].substring(index1 + 1);
-        int index2 = arr[2].indexOf("=");
-        release_year = arr[2].substring(index2 + 1);
-        int index3 = arr[3].indexOf("=");
-        language_id = arr[3].substring(index3 + 1);
-        int index4 = arr[4].indexOf("=");
-        length = arr[4].substring(index4 + 1);
-        int release_year1 = Integer.parseInt(release_year);
-        int language_id1 = Integer.parseInt(language_id);
-        int length1 = Integer.parseInt(length);
-        stm.setString(1, title);
-        stm.setString(2, description);
-        stm.setInt(3, release_year1);
-        stm.setInt(4, language_id1);
-        stm.setInt(5, length1);
-        int resultSet = stm.executeUpdate();
-        total = total + "<li><a href=\"film?id=>" + title + description + release_year + language_id + length + "</a>" + "</li>";
-        return total;
-    }
-    public static String Read_add_Film_actor(HttpExchange t) throws SQLException, FileNotFoundException {
-        String total = "";
-        String line1 = t.getRequestURI().getQuery();
-        Scanner s = new Scanner((t.getRequestBody()));
-        String params = s.nextLine();
-        s.close();
-        String query = ("insert into film_actor (actor_id,film_id) values (?,?)");
-        Connection conn = Read_config_dvdrental();
-        PreparedStatement stm = conn.prepareStatement(query);
-        String line = "";
-        String[] arr = params.split("&");
-        String actor_id, film_id;
-        int index = arr[0].indexOf("=");
-        film_id = arr[0].substring(index + 1);
-        int index1 = arr[1].indexOf("=");
-        actor_id = arr[1].substring(index1 + 1);
-        int actor_id1 = Integer.parseInt(actor_id);
-        int film_id1 = Integer.parseInt(film_id);
-        stm.setInt(1, actor_id1);
-        stm.setInt(2, film_id1);
-        int resultSet = stm.executeUpdate();
-        total="<li><a href=\"film?film_id="+film_id1+"\"> посмотреть </a>" + "</li>";
-        return total;
-    }
-    static class Connect_film_actor_Handler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
-            try {
-                String file="";
-                if (t.getRequestMethod().equals("GET")) {
-                    //select from film
-                    //select from actor
-                    String head = Head();
-                    String foot = Foot();
-                    String Body_connect_film_actor = Body_connect_film_actor(t);
-                    String body_close = Body_close();
-                    // String add_film=Read_add_Film(t);
-                    file = head + Body_connect_film_actor + "<ul>" +
-                            "</ul>" + body_close + foot;
-                }
-                if (t.getRequestMethod().equals("POST")) {
-                    String Body_connect_film_actor = Body_connect_film_actor(t);
-                    String head = Head();
-                    String foot = Foot();
-                   String film_actor=Read_add_Film_actor(t);
-                    file = head + film_actor+foot;
-                }
-                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
-                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
-                writer1.write(file);
-                writer1.close();
-            } catch (IOException| SQLException  e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static String Body_connect_film_actor(HttpExchange t) {
-        try {
-            String Read_films_for_options = Read_films_for_options(t);
-            String Read_films_for_actors = Read_films_for_actors(t);
-            return "<body>\n" +
-                    "\n" +
-                    "<form action=\"/connect_film_actor\" method='post'>\n" +
-                    "<select name= \"film_id\"><br>\n" +
-                    "<option selected= \"selected\"> Выберите фильм </option><br>\n" +
-                   Read_films_for_options+
-                    "</select><br>\n" +
-                    "<select name= \"actor_id\"><br>\n" +
-                    "<option selected= \"selected\"> Выберите актера </option><br>\n" +
-                    Read_films_for_actors +
-                    "</select><br>\n" +
-                    "<input type=\"submit\" value=\"Submit\">\n" +
-                    "</form>" +
-                    "\n";
-        } catch(IOException | SQLException e){
-            e.printStackTrace();
-        } return "";
-    }
-
     public static String Read_films_for_options(HttpExchange t) throws SQLException, FileNotFoundException {
         StringBuilder total_get_films = new StringBuilder();
         String options = "";
@@ -283,28 +349,73 @@ public class ServerFilmsJDBC {
         return options;
     }
 
-    public static String Read_films_for_actors(HttpExchange t) throws SQLException, FileNotFoundException {
-        StringBuilder total_get_actors = new StringBuilder();
-        String options = "";
-        String query_get_actors = ("select actor_id,first_name, last_name from actor ");
-        Connection conn_get_films = Read_config_dvdrental();
-        PreparedStatement stm_get_films = conn_get_films.prepareStatement(query_get_actors);
-        ResultSet resultSet_get_actors = stm_get_films.executeQuery();
-        while (resultSet_get_actors.next()) {
-            String first_name = resultSet_get_actors.getString("first_name");
-            String last_name = resultSet_get_actors.getString("last_name");
-            String actor_id = resultSet_get_actors.getString("actor_id");
-            total_get_actors.append("<option value=");
-            total_get_actors.append(actor_id);
-            total_get_actors.append(">");
-            total_get_actors.append(first_name);
-            total_get_actors.append(last_name);
-            total_get_actors.append("</option>");
+    static class Connect_film_actor_Handler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
+            try {
+                String file = "";
+                if (t.getRequestMethod().equals("GET")) {
+                    //select from film
+                    //select from actor
+                    String head = Head();
+                    String foot = Foot();
+                    String Body_connect_film_actor = Body_connect_film_actor(t);
+                    String body_close = Body_close();
+                    // String add_film=Read_add_Film(t);
+                    file = head + Body_connect_film_actor + "<ul>" +
+                            "</ul>" + body_close + foot;
+                }
+                if (t.getRequestMethod().equals("POST")) {
+                    String head = Head();
+                    String foot = Foot();
+                    String Body_connect_film_actor = Body_connect_film_actor(t);
+                    String film_actor = Read_add_Film_actor(t);
+                    file = head + film_actor + foot;
+                }
+                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
+                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
+                writer1.write(file);
+                writer1.close();
+            } catch (IOException | SQLException e) {
+                e.printStackTrace();
+            }
         }
-        options= total_get_actors.toString();
-        return options;
     }
-     static class add_film_Handler implements HttpHandler {
+
+    static class Connect_film_category_Handler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
+            try {
+                String file = "";
+                if (t.getRequestMethod().equals("GET")) {
+                    //select from film
+                    //select from actor
+                    String head = Head();
+                    String foot = Foot();
+                    String Body_connect_film_category = Body_connect_film_category(t);
+                    String body_close = Body_close();
+                    // String add_film=Read_add_Film(t);
+                    file = head + Body_connect_film_category + "<ul>" +
+                            "</ul>" + body_close + foot;
+                }
+                if (t.getRequestMethod().equals("POST")) {
+                    String head = Head();
+                    String foot = Foot();
+                    String Body_connect_film_category = Body_connect_film_category(t);
+                    String film_actor = Read_add_Film_actor(t);
+                    file = head + film_actor + foot;
+                }
+                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
+                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
+                writer1.write(file);
+                writer1.close();
+            } catch (IOException | SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    static class add_film_Handler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
@@ -347,7 +458,6 @@ public class ServerFilmsJDBC {
             }
         }
     }
-
     public static String Head() {
         return ("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -376,7 +486,6 @@ public class ServerFilmsJDBC {
                 "</form>\n" +
                 "\n";
     }
-
     public static String BodyCircle_open() {
         return "<body>\n" +
                 "\n";
