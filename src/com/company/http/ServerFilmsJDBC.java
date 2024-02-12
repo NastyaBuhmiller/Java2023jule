@@ -3,7 +3,8 @@ package com.company.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-
+import java.util.List;
+import java.util.UUID;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class ServerFilmsJDBC {
         server.createContext("/add_film", new ServerFilmsJDBC.add_film_Handler());
         server.createContext("/add_actor", new ServerFilmsJDBC.add_actor_Handler());
         server.createContext("/connect_film_actor", new ServerFilmsJDBC.Connect_film_actor_Handler());
+        server.createContext("/connect_film_category", new ServerFilmsJDBC.Connect_film_category_Handler());
         Class.forName("org.postgresql.Driver");
         server.setExecutor(null); // creates a default executor обязательная строка
         server.start(); //запуск сервера
@@ -84,6 +86,15 @@ public class ServerFilmsJDBC {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
@@ -92,7 +103,7 @@ public class ServerFilmsJDBC {
                 String line = ReadInfoFilm(t);
                 String name_actor1 = Read_actor(t);
                 String inventory = Read_inventory(t);
-                file = head + bodyCircle_open + "<ul>" +
+                file = head + visits+bodyCircle_open + "<ul>" +
                         line + name_actor1 + inventory + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -108,12 +119,21 @@ public class ServerFilmsJDBC {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String Body_add_film = Body_add_film();
                 String body_close = Body_close();
                 String file;
-                file = head + Body_add_film + "<ul>" +
+                file = head + visits+Body_add_film + "<ul>" +
                         "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -207,10 +227,43 @@ public class ServerFilmsJDBC {
         total="<li><a href=\"film?film_id="+film_id1+"\"> посмотреть </a>" + "</li>";
         return total;
     }
+    public static String Read_add_Film_category(HttpExchange t) throws SQLException, FileNotFoundException {
+        String total = "";
+        String line1 = t.getRequestURI().getQuery();
+        Scanner s = new Scanner((t.getRequestBody()));
+        String params = s.nextLine();
+        s.close();
+        String query = ("insert into film_category (film_id,category_id) values (?,?)");
+        Connection conn = Read_config_dvdrental();
+        PreparedStatement stm = conn.prepareStatement(query);
+        String line = "";
+        String[] arr = params.split("&");
+        String category_id, film_id;
+        int index = arr[0].indexOf("=");
+        film_id = arr[0].substring(index + 1);
+        int index1 = arr[1].indexOf("=");
+        category_id = arr[1].substring(index1 + 1);
+        int category_id1 = Integer.parseInt(category_id);
+        int film_id1 = Integer.parseInt(film_id);
+        stm.setInt(1, film_id1);
+        stm.setInt(2, category_id1);
+        int resultSet = stm.executeUpdate();
+        total="<li><a href=\"film?film_id="+film_id1+"\"> посмотреть </a>" + "</li>";
+        return total;
+    }
     static class Connect_film_actor_Handler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String file="";
                 if (t.getRequestMethod().equals("GET")) {
                     //select from film
@@ -220,7 +273,7 @@ public class ServerFilmsJDBC {
                     String Body_connect_film_actor = Body_connect_film_actor(t);
                     String body_close = Body_close();
                     // String add_film=Read_add_Film(t);
-                    file = head + Body_connect_film_actor + "<ul>" +
+                    file = head + visits+Body_connect_film_actor + "<ul>" +
                             "</ul>" + body_close + foot;
                 }
                 if (t.getRequestMethod().equals("POST")) {
@@ -228,7 +281,48 @@ public class ServerFilmsJDBC {
                     String head = Head();
                     String foot = Foot();
                    String film_actor=Read_add_Film_actor(t);
-                    file = head + film_actor+foot;
+                    file = head + visits+film_actor+foot;
+                }
+                t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
+                PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
+                writer1.write(file);
+                writer1.close();
+            } catch (IOException| SQLException  e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    static class Connect_film_category_Handler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
+            try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
+                String file="";
+                if (t.getRequestMethod().equals("GET")) {
+                    //select from film
+                    //select from actor
+                    String head = Head();
+                    String foot = Foot();
+                    String Body_connect_film_category = Body_connect_film_category(t);
+                    String body_close = Body_close();
+                    // String add_film=Read_add_Film(t);
+                    file = head + visits+Body_connect_film_category + "<ul>" +
+                            "</ul>" + body_close + foot;
+                }
+                if (t.getRequestMethod().equals("POST")) {
+                    String Body_connect_film_category = Body_connect_film_category(t);
+                    String head = Head();
+                    String foot = Foot();
+                    String film_actor=Read_add_Film_category(t);
+                    file = head + visits+film_actor+foot;
                 }
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -254,6 +348,28 @@ public class ServerFilmsJDBC {
                     "<select name= \"actor_id\"><br>\n" +
                     "<option selected= \"selected\"> Выберите актера </option><br>\n" +
                     Read_films_for_actors +
+                    "</select><br>\n" +
+                    "<input type=\"submit\" value=\"Submit\">\n" +
+                    "</form>" +
+                    "\n";
+        } catch(IOException | SQLException e){
+            e.printStackTrace();
+        } return "";
+    }
+    public static String Body_connect_film_category(HttpExchange t) {
+        try {
+            String Read_films_for_options = Read_films_for_options(t);
+            String Read_films_category = Read_films_category(t);
+            return "<body>\n" +
+                    "\n" +
+                    "<form action=\"/connect_film_category\" method='post'>\n" +
+                    "<select name= \"film_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите фильм </option><br>\n" +
+                    Read_films_for_options+
+                    "</select><br>\n" +
+                    "<select name= \"category_id\"><br>\n" +
+                    "<option selected= \"selected\"> Выберите категорию фильма </option><br>\n" +
+                    Read_films_category +
                     "</select><br>\n" +
                     "<input type=\"submit\" value=\"Submit\">\n" +
                     "</form>" +
@@ -304,17 +420,45 @@ public class ServerFilmsJDBC {
         options= total_get_actors.toString();
         return options;
     }
+    public static String Read_films_category(HttpExchange t) throws SQLException, FileNotFoundException {
+        StringBuilder total_get_actors = new StringBuilder();
+        String options = "";
+        String query_get_category = ("select category_id,name from category ");
+        Connection conn_get_films = Read_config_dvdrental();
+        PreparedStatement stm_get_films = conn_get_films.prepareStatement(query_get_category);
+        ResultSet resultSet_get_category = stm_get_films.executeQuery();
+        while (resultSet_get_category.next()) {
+            String category_id = resultSet_get_category.getString("category_id");
+            String name = resultSet_get_category.getString("name");
+            total_get_actors.append("<option value=");
+            total_get_actors.append(category_id);
+            total_get_actors.append(">");
+            total_get_actors.append(name);
+            total_get_actors.append("</option>");
+        }
+        options= total_get_actors.toString();
+        return options;
+    }
      static class add_film_Handler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String Body_add_film = Body_add_film();
                 String body_close = Body_close();
                 String file;
                 String add_film = Read_add_Film(t);
-                file = head + Body_add_film + "<ul>" + add_film +
+                file = head +visits+ Body_add_film + "<ul>" + add_film +
                         "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -330,13 +474,22 @@ public class ServerFilmsJDBC {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String Body_add_film = Body_add_film();
                 String body_close = Body_close();
                 String file;
                 String add_actor = Read_add_actor(t);
-                file = head + Body_add_film + "<ul>" + add_actor +
+                file = head + visits+Body_add_film + "<ul>" + add_actor +
                         "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -443,13 +596,22 @@ public class ServerFilmsJDBC {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookie");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getResponseHeaders().set("Set-Cookie","session_key=" + randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
                 String line = Read();
-                file = head + bodyCircle_open + "<ul>" +
+                file = head + visits+bodyCircle_open + "<ul>" +
                         line + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
@@ -468,13 +630,22 @@ public class ServerFilmsJDBC {
         @Override
         public void handle(HttpExchange t) { //переменная t хранит запрос и ответ на него
             try {
+                List<String> cookies=t.getRequestHeaders().get("Cookies");//создаем лист с имененм кукис=получаем его от браузера с помощью request все, что хранится в кукис
+                String visits;
+                if (cookies !=null && cookies.get(0).contains("session_key")){
+                    visits="Уже заходил";
+                } else {
+                    String randomKey=UUID.randomUUID().toString();//формируем индивидуальный ключ
+                    t.getRequestHeaders().set("Set-Cookie","session_key="+randomKey);
+                    visits="Первый раз";
+                }
                 String head = Head();
                 String foot = Foot();
                 String bodyCircle_open = BodyCircle_open();
                 String body_close = Body_close();
                 String file;
                 String line = ReadFilm(t);
-                file = head + bodyCircle_open + "<ul>" +
+                file = head + visits+bodyCircle_open + "<ul>" +
                         line + "</ul>" + body_close + foot;
                 t.sendResponseHeaders(200, file.getBytes().length);// http статус код (200-ок)
                 PrintWriter writer1 = new PrintWriter(t.getResponseBody());// подготовка инструмента для записи данных в ответ
