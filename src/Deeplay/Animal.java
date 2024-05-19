@@ -1,10 +1,12 @@
+package Deeplay;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Animal {
     public static void main(String[] args) throws FileNotFoundException {
-        File file = new File("src\\Animal");
+        File file = new File("src\\Deeplay\\Animal");
         String line = "";
         int herbivores1 = 0;
         int herbivoresOrCarnivorousAndMini = 0;
